@@ -292,13 +292,13 @@ export default function RebalanceAgentPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-73px)] max-w-5xl flex-col px-5 py-6">
-      <section className="mb-5 rounded-lg border border-line bg-white/92 p-5 shadow-soft">
-        <p className="text-sm font-medium text-pine">ETF portfolio coach</p>
+    <main className="mx-auto flex min-h-[calc(100vh-65px)] max-w-5xl flex-col px-5 py-6">
+      <section className="mb-5 rounded-lg border border-line bg-white p-5 shadow-soft">
+        <p className="text-xs font-bold uppercase tracking-[0.08em] text-pine">ETF portfolio coach</p>
         <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-ink">리밸런싱 AI agent</h1>
-            <p className="mt-2 leading-7 text-slate-600">
+            <h1 className="text-3xl font-bold text-ink">리밸런싱 AI agent</h1>
+            <p className="mt-2 max-w-2xl leading-7 text-slate-600">
               질문을 남기면 Agent가 이미지, 영상, 시장 도구를 골라 호출하고 진행 상황을 보여줍니다.
             </p>
           </div>
@@ -306,15 +306,15 @@ export default function RebalanceAgentPage() {
             type="button"
             onClick={onClearConversation}
             disabled={loading || historyLoading || messages.length === 0}
-            className="rounded-md border border-line px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-mist disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-md border border-line bg-white px-3 py-2 text-sm font-bold text-slate-600 shadow-sm hover:bg-mist disabled:cursor-not-allowed disabled:opacity-50"
           >
             대화 비우기
           </button>
         </div>
       </section>
 
-      <section className="flex h-[calc(100vh-260px)] min-h-[560px] flex-col rounded-lg border border-line bg-white/94 shadow-soft">
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-6 [scrollbar-gutter:stable]">
+      <section className="flex h-[calc(100vh-260px)] min-h-[560px] flex-col overflow-hidden rounded-lg border border-line bg-white shadow-soft">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto bg-[#fbfcfd] px-5 py-6 [scrollbar-gutter:stable]">
           {historyLoading ? (
             <div className="rounded-lg border border-line bg-mist p-4 text-sm text-slate-600">
               저장된 대화를 불러오는 중입니다.
@@ -329,7 +329,7 @@ export default function RebalanceAgentPage() {
 
           {loading ? (
             <div className="flex justify-start">
-              <div className="max-w-3xl rounded-lg border border-line bg-mist p-4">
+              <div className="max-w-3xl rounded-lg border border-line bg-white p-4 shadow-sm">
                 <div className="mb-3 flex items-center gap-2">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-pine" />
                   <p className="font-semibold text-ink">Agent가 생각하고 있습니다</p>
@@ -338,7 +338,7 @@ export default function RebalanceAgentPage() {
                   {toolPlan.map((step, index) => {
                     const state = index < activeStepIndex ? "done" : index === activeStepIndex ? "active" : "waiting";
                     return (
-                      <div key={`${step.tool}-${index}`} className="flex gap-3 rounded-md bg-white/80 p-3 text-sm">
+                      <div key={`${step.tool}-${index}`} className="flex gap-3 rounded-md bg-mist p-3 text-sm">
                         <span
                           className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
                             state === "done" ? "bg-pine" : state === "active" ? "animate-pulse bg-amber" : "bg-line"
@@ -360,7 +360,7 @@ export default function RebalanceAgentPage() {
           <div ref={scrollRef} />
         </div>
 
-        <form className="border-t border-line bg-white/96 p-4" onSubmit={onSubmit}>
+        <form className="border-t border-line bg-white p-4" onSubmit={onSubmit}>
           {imageFile ? (
             <div className="mb-3 flex items-center gap-3 rounded-md border border-line bg-mist p-2">
               {previewUrl ? (
@@ -394,16 +394,16 @@ export default function RebalanceAgentPage() {
             <input
               value={youtubeUrl}
               onChange={(event) => setYoutubeUrl(event.target.value)}
-              className="w-full rounded-md border border-line bg-mist px-3 py-2 text-sm outline-none focus:border-pine"
+              className="w-full rounded-md border border-line bg-mist px-3 py-2 text-sm outline-none transition focus:border-pine focus:bg-white"
               placeholder="YouTube URL을 같이 참고하려면 여기에 붙여넣기"
             />
           </label>
 
-          <div className="flex items-end gap-2 rounded-lg border border-line bg-white p-2 focus-within:border-pine">
+          <div className="flex items-end gap-2 rounded-lg border border-line bg-white p-2 shadow-sm transition focus-within:border-pine focus-within:shadow-soft">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-line bg-mist text-xl font-semibold text-ink hover:bg-white"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-line bg-mist text-xl font-bold text-ink transition hover:border-pine hover:bg-white"
               aria-label="이미지 첨부"
               title="이미지 첨부"
             >
@@ -419,7 +419,7 @@ export default function RebalanceAgentPage() {
             <button
               type="submit"
               disabled={loading || !query.trim()}
-              className="rounded-md bg-pine px-4 py-2.5 font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="rounded-md bg-pine px-4 py-2.5 font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               {loading ? "실행 중" : "전송"}
             </button>
@@ -437,15 +437,15 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <article
-        className={`max-w-3xl rounded-lg border p-4 ${
+        className={`max-w-3xl rounded-lg border p-4 shadow-sm ${
           isUser
-            ? "border-pine bg-teal-50"
+            ? "border-blue-200 bg-blue-50"
             : isSystem
               ? "border-coral/40 bg-red-50 text-red-800"
               : "border-line bg-white"
         }`}
       >
-        <p className="mb-2 text-sm font-semibold text-ink">{isUser ? "나" : isSystem ? "시스템" : "리밸런싱 AI agent"}</p>
+        <p className="mb-2 text-sm font-bold text-ink">{isUser ? "나" : isSystem ? "시스템" : "리밸런싱 AI agent"}</p>
         {message.imageUrl ? (
           <img src={message.imageUrl} alt={message.imageName ?? "첨부 이미지"} className="mb-3 max-h-48 rounded-md border border-line object-contain" />
         ) : null}

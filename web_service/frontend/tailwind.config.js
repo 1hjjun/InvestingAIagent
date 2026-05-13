@@ -4,15 +4,15 @@ const config = {
   theme: {
     extend: {
       colors: {
-        ink: "#18202f",
-        mist: "#f4f7fb",
-        line: "#d9e2ef",
-        pine: "#0f766e",
+        ink: "#141821",
+        mist: "#f5f7fa",
+        line: "#e2e7ee",
+        pine: "#2563eb",
         coral: "#df6757",
-        amber: "#d99121",
+        amber: "#f59e0b",
       },
       boxShadow: {
-        soft: "0 18px 60px rgba(24, 32, 47, 0.12)",
+        soft: "0 18px 48px rgba(20, 24, 33, 0.08)",
       },
     },
   },
