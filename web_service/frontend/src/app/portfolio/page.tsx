@@ -27,10 +27,7 @@ type Portfolio = {
   };
 };
 
-async function createRunWithUpload(input: {
-  user_query: string;
-  image?: File | null;
-}) {
+async function createRunWithUpload(input: { user_query: string; image?: File | null }) {
   const formData = new FormData();
   formData.append("user_query", input.user_query);
   if (input.image) {
@@ -75,7 +72,7 @@ export default function PortfolioPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [result, setResult] = useState<AgentRun | null>(null);
+  const [lastTraceId, setLastTraceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -86,10 +83,6 @@ export default function PortfolioPage() {
   const analytics = portfolio?.analytics;
   const themeAllocation = analytics?.theme_allocation ?? [];
   const conicGradient = useMemo(() => buildConicGradient(themeAllocation), [themeAllocation]);
-  const chartSummary = useMemo(() => {
-    if (!result?.chart_data) return null;
-    return JSON.stringify(result.chart_data, null, 2);
-  }, [result]);
 
   function updateImage(file: File | null) {
     if (previewUrl) {
@@ -113,7 +106,7 @@ export default function PortfolioPage() {
         user_query: imageAnalysisQuery,
         image: imageFile,
       });
-      setResult(runResult);
+      setLastTraceId(runResult.trace_id || null);
       getPortfolio().then(setPortfolio).catch(() => undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Agent 실행에 실패했습니다.");
@@ -244,60 +237,19 @@ export default function PortfolioPage() {
               </div>
             </div>
           ) : null}
-        </section>
 
-        <section className="min-h-[420px] rounded-lg border border-line bg-white/94 p-5 shadow-soft">
-          {!result && !loading ? (
-            <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
-              <span className="mb-5 grid h-16 w-16 place-items-center rounded-lg bg-amber text-white">RUN</span>
-              <h2 className="text-2xl font-semibold text-ink">실행 결과가 여기에 표시됩니다</h2>
-              <p className="mt-3 max-w-xl leading-7 text-slate-600">
-                왼쪽에서 포트폴리오 이미지를 넣고 분석을 실행하세요.
-              </p>
-            </div>
-          ) : null}
-
-          {loading ? (
-            <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
-              <span className="mb-4 text-sm font-bold text-pine">RUNNING</span>
-              <h2 className="text-xl font-semibold text-ink">이미지를 분석하는 중...</h2>
-              <p className="mt-2 text-slate-600">실행이 끝나면 trace가 자동으로 저장됩니다.</p>
-            </div>
-          ) : null}
-
-          {result ? (
-            <div className="space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-                <div>
-                  <p className="text-sm font-medium text-pine">Trace ID</p>
-                  <p className="font-mono text-sm text-slate-700">{result.trace_id}</p>
-                </div>
+          {loading || lastTraceId ? (
+            <div className="mt-5 rounded-md border border-line bg-mist p-3 text-sm text-slate-700">
+              {loading ? (
+                <p className="font-semibold text-ink">이미지를 분석하는 중입니다.</p>
+              ) : (
                 <a
-                  href={`/dev?trace=${result.trace_id}`}
-                  className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-semibold text-ink hover:bg-mist"
+                  href={`/dev?trace=${lastTraceId}`}
+                  className="font-semibold text-pine hover:underline"
                 >
-                  개발자 trace 보기
+                  최근 분석 trace 보기
                 </a>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Metric label="종료 사유" value={result.stop_reason ?? "final_answer"} />
-                <Metric label="일지 저장" value={result.is_saved ? "저장됨" : "저장 안 됨"} />
-              </div>
-
-              <article className="rounded-lg border border-line bg-white p-5">
-                <h2 className="mb-3 text-xl font-semibold text-ink">Agent 의견</h2>
-                <pre className="whitespace-pre-wrap break-words leading-7 text-slate-700">{result.answer_text}</pre>
-              </article>
-
-              {chartSummary ? (
-                <article className="rounded-lg border border-line bg-ink p-5 text-white">
-                  <h2 className="mb-3 text-lg font-semibold">Chart data</h2>
-                  <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words text-sm leading-6 text-slate-100">
-                    {chartSummary}
-                  </pre>
-                </article>
-              ) : null}
+              )}
             </div>
           ) : null}
         </section>
