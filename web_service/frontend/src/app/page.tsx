@@ -313,8 +313,8 @@ export default function RebalanceAgentPage() {
         </div>
       </section>
 
-      <section className="flex min-h-[520px] flex-1 flex-col rounded-lg border border-line bg-white/94 shadow-soft">
-        <div className="flex-1 space-y-5 overflow-y-auto px-5 py-6">
+      <section className="flex h-[calc(100vh-260px)] min-h-[560px] flex-col rounded-lg border border-line bg-white/94 shadow-soft">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-6 [scrollbar-gutter:stable]">
           {historyLoading ? (
             <div className="rounded-lg border border-line bg-mist p-4 text-sm text-slate-600">
               저장된 대화를 불러오는 중입니다.
