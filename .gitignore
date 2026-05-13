@@ -30,7 +30,6 @@ chunks/
 chroma_db/
 external/
 목차.md
-/README.md
 /requirements.txt
 /app.py
 /investment_assistant.py
