@@ -21,6 +21,14 @@ type ChatMessage = {
   traceId?: string;
 };
 
+type StoredMessage = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  trace_id?: string | null;
+  image_name?: string | null;
+};
+
 type ToolStep = {
   tool: string;
   detail: string;
@@ -52,8 +60,41 @@ async function createRunWithUpload(input: {
   return response.json() as Promise<AgentRun>;
 }
 
+async function getStoredMessages() {
+  const response = await fetch(`${API_BASE}/api/conversations/rebalance-agent/messages`, {
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(`Messages failed: ${response.status}`);
+  }
+  const payload = (await response.json()) as { messages: StoredMessage[] };
+  return payload.messages.map((message) => ({
+    id: `stored-${message.id}`,
+    role: message.role,
+    content: message.content,
+    imageName: message.image_name ?? undefined,
+    traceId: message.trace_id ?? undefined,
+  })) satisfies ChatMessage[];
+}
+
+async function clearStoredMessages() {
+  const response = await fetch(`${API_BASE}/api/conversations/rebalance-agent/messages`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error(`Clear failed: ${response.status}`);
+  }
+}
+
 const sampleQuestion =
   "포트폴리오 이미지와 시장 상황을 참고해서 지금 리밸런싱할 만한 포인트를 시나리오별로 정리해줘. 단정적인 매수/매도 지시는 하지 말고 판단 기준을 알려줘.";
+
+const welcomeMessage: ChatMessage = {
+  id: "welcome",
+  role: "assistant",
+  content:
+    "안녕하세요. 포트폴리오 이미지나 YouTube URL을 곁들여 질문하면, 필요한 도구를 차례대로 호출해서 리밸런싱 관점을 정리해드릴게요.",
+};
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -112,19 +153,13 @@ function buildToolPlan(hasImage: boolean, hasYoutube: boolean, question: string)
 export default function RebalanceAgentPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        "안녕하세요. 포트폴리오 이미지나 YouTube URL을 곁들여 질문하면, 필요한 도구를 차례대로 호출해서 리밸런싱 관점을 정리해드릴게요.",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [query, setQuery] = useState(sampleQuestion);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [toolPlan, setToolPlan] = useState<ToolStep[]>([]);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
 
@@ -136,6 +171,30 @@ export default function RebalanceAgentPage() {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, activeStepIndex, loading]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getStoredMessages()
+      .then((storedMessages) => {
+        if (!cancelled) {
+          setMessages(storedMessages);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMessages([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setHistoryLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading || !toolPlan.length) return undefined;
@@ -151,6 +210,23 @@ export default function RebalanceAgentPage() {
     }
     setImageFile(file);
     setPreviewUrl(file ? URL.createObjectURL(file) : null);
+  }
+
+  async function onClearConversation() {
+    if (loading) return;
+    try {
+      await clearStoredMessages();
+      setMessages([]);
+    } catch (err) {
+      setMessages((current) => [
+        ...current,
+        {
+          id: makeId(),
+          role: "system",
+          content: err instanceof Error ? err.message : "대화 기록을 지우지 못했습니다.",
+        },
+      ]);
+    }
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -211,14 +287,34 @@ export default function RebalanceAgentPage() {
     <main className="mx-auto flex min-h-[calc(100vh-73px)] max-w-5xl flex-col px-5 py-6">
       <section className="mb-5 rounded-lg border border-line bg-white/92 p-5 shadow-soft">
         <p className="text-sm font-medium text-pine">ETF portfolio coach</p>
-        <h1 className="mt-1 text-3xl font-semibold text-ink">리밸런싱 AI agent</h1>
-        <p className="mt-2 leading-7 text-slate-600">
-          질문을 남기면 Agent가 이미지, 영상, 시장 도구를 골라 호출하고 진행 상황을 보여줍니다.
-        </p>
+        <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-ink">리밸런싱 AI agent</h1>
+            <p className="mt-2 leading-7 text-slate-600">
+              질문을 남기면 Agent가 이미지, 영상, 시장 도구를 골라 호출하고 진행 상황을 보여줍니다.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClearConversation}
+            disabled={loading || historyLoading || messages.length === 0}
+            className="rounded-md border border-line px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-mist disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            대화 비우기
+          </button>
+        </div>
       </section>
 
       <section className="flex min-h-[520px] flex-1 flex-col rounded-lg border border-line bg-white/94 shadow-soft">
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-6">
+          {historyLoading ? (
+            <div className="rounded-lg border border-line bg-mist p-4 text-sm text-slate-600">
+              저장된 대화를 불러오는 중입니다.
+            </div>
+          ) : messages.length === 0 ? (
+            <MessageBubble message={welcomeMessage} />
+          ) : null}
+
           {messages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}

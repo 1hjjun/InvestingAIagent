@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from investment_assistant import answer_question
+from src.conversation_store import add_message, clear_messages, list_messages
 from src.memory_store import load_daily_journals, load_memory
 from src.portfolio_analytics import calculate_portfolio_analytics
 from src.profile_store import load_portfolio, load_profile, save_portfolio, save_profile
@@ -89,6 +90,17 @@ def health() -> dict[str, str]:
     return {"ok": "true"}
 
 
+@app.get("/api/conversations/rebalance-agent/messages")
+def get_rebalance_messages() -> dict[str, Any]:
+    return {"messages": list_messages()}
+
+
+@app.delete("/api/conversations/rebalance-agent/messages")
+def delete_rebalance_messages() -> dict[str, bool]:
+    clear_messages()
+    return {"ok": True}
+
+
 def _trace_files() -> list[Path]:
     if not TRACE_DIR.exists():
         return []
@@ -152,6 +164,7 @@ async def _save_upload(image: UploadFile | None) -> str | None:
 @app.post("/api/runs", response_model=RunResponse)
 async def create_agent_run(payload: RunRequest) -> RunResponse:
     profile_context, portfolio_context = _agent_context()
+    add_message("user", _compose_query(payload))
     result = await run_agent(
         AgentInput(
             user_query=_compose_query(payload),
@@ -160,6 +173,7 @@ async def create_agent_run(payload: RunRequest) -> RunResponse:
             portfolio_context=portfolio_context,
         )
     )
+    add_message("assistant", result.answer_text, trace_id=result.trace_id)
     return _run_response(result)
 
 
@@ -170,15 +184,23 @@ async def create_agent_run_upload(
     image: UploadFile | None = File(default=None),
 ) -> RunResponse:
     image_path = await _save_upload(image)
+    query = _compose_query_text(user_query, youtube_url)
+    add_message(
+        "user",
+        query,
+        image_name=image.filename if image else None,
+        image_path=image_path,
+    )
     profile_context, portfolio_context = _agent_context()
     result = await run_agent(
         AgentInput(
-            user_query=_compose_query_text(user_query, youtube_url),
+            user_query=query,
             image_url=image_path,
             profile_context=profile_context,
             portfolio_context=portfolio_context,
         )
     )
+    add_message("assistant", result.answer_text, trace_id=result.trace_id)
     return _run_response(result)
 
 
