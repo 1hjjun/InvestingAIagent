@@ -16,7 +16,7 @@ web_service/
     src/app/portfolio/page.tsx  # 포트폴리오 이미지 분석 작업대
     src/app/macro/page.tsx      # YouTube 기반 매크로 분석 작업대
     src/app/dev/page.tsx        # 기존 trace/dev 화면
-    src/app/dashboard/page.tsx  # 포트폴리오/대화 노트 대시보드
+    src/app/journal/page.tsx    # 날짜별 대화 노트
     src/app/chat/page.tsx       # 자료 기반 리서치 채팅
 ```
 
@@ -62,7 +62,7 @@ http://127.0.0.1:3000
 /portfolio  포트폴리오 이미지 분석 화면
 /macro      YouTube 최대 3개 기반 매크로 분석 화면
 /dev        기존 trace 확인 화면
-/dashboard  포트폴리오 대시보드와 날짜별 대화 노트
+/journal    날짜별 대화 노트
 /chat       자료 기반 투자 리서치 채팅
 ```
 

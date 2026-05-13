@@ -199,8 +199,8 @@ export default function PortfolioPage() {
               <p className="text-sm font-medium text-pine">Latest portfolio</p>
               <h2 className="mt-1 text-2xl font-semibold text-ink">최근 포트폴리오 대시보드</h2>
             </div>
-            <a href="/dashboard" className="rounded-md border border-line px-3 py-2 text-sm font-semibold text-ink hover:bg-mist">
-              전체 대시보드
+            <a href="/journal" className="rounded-md border border-line px-3 py-2 text-sm font-semibold text-ink hover:bg-mist">
+              대화 노트
             </a>
           </div>
 
