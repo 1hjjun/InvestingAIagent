@@ -30,8 +30,15 @@ source .venv/bin/activate
 pip install -r web_service/backend/requirements.txt
 
 cd web_service/frontend
-npm install
+pnpm install
 cd ../..
+```
+
+Wanted WDS(`@wanteddev/*`) 패키지를 설치하려면 GitHub Packages 접근 토큰이 필요합니다. 토큰이 있는 경우 아래처럼 현재 터미널에만 설정한 뒤 설치합니다.
+
+```bash
+export GITHUB_TOKEN=your_github_packages_token
+pnpm add @wanteddev/wds @wanteddev/wds-icon @wanteddev/wds-nextjs
 ```
 
 프로젝트 루트에서 백엔드를 실행합니다.
@@ -46,8 +53,8 @@ uvicorn web_service.backend.main:app --reload --port 8000
 
 ```bash
 cd web_service/frontend
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 브라우저에서 엽니다.
@@ -72,10 +79,10 @@ http://127.0.0.1:3000
 
 ```bash
 cd web_service/frontend
-npm run build
+pnpm build
 ```
 
-개발 서버(`npm run dev`)가 켜져 있을 때 `npm run build`를 동시에 실행하면 Next.js의 `.next` 캐시가 섞여 CSS가 깨져 보일 수 있습니다. 빌드 확인은 개발 서버를 종료한 뒤 실행하세요.
+개발 서버(`pnpm dev`)가 켜져 있을 때 `pnpm build`를 동시에 실행하면 Next.js의 `.next` 캐시가 섞여 CSS가 깨져 보일 수 있습니다. 빌드 확인은 개발 서버를 종료한 뒤 실행하세요.
 
 ## 현재 연결된 기능
 
