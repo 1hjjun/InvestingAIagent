@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+openai
+pillow
+python-multipart
+openai-agents==0.16.1
+yfinance>=0.2.40
+fear-greed>=0.1.0
+youtube-transcript-api>=0.6.2
+pytest-asyncio>=0.23
