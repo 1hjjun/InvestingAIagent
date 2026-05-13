@@ -33,6 +33,9 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <Link className="rounded-md px-3 py-2 text-ink hover:bg-mist" href="/dashboard">
                 Dashboard
               </Link>
+              <Link className="rounded-md px-3 py-2 text-ink hover:bg-mist" href="/chat">
+                Chat
+              </Link>
               <Link className="rounded-md px-3 py-2 text-ink hover:bg-mist" href="/dev">
                 Dev
               </Link>

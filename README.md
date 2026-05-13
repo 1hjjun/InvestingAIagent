@@ -36,8 +36,6 @@ mindInvesting/
     portfolio_analytics.py
     profile_store.py
 
-  scripts/
-    dev_web.sh
 ```
 
 ## 실행 방법
@@ -72,8 +70,18 @@ OPENAI_API_KEY=your_api_key_here
 
 개발 서버를 실행합니다.
 
+터미널 1에서 백엔드를 실행합니다.
+
 ```bash
-./scripts/dev_web.sh
+source .venv/bin/activate
+uvicorn web_service.backend.main:app --reload --port 8000
+```
+
+터미널 2에서 프론트엔드를 실행합니다.
+
+```bash
+cd web_service/frontend
+npm run dev
 ```
 
 브라우저에서 아래 주소를 엽니다.

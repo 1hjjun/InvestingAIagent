@@ -11,6 +11,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from investment_assistant import answer_question
 from src.memory_store import load_daily_journals, load_memory
 from src.portfolio_analytics import calculate_portfolio_analytics
 from src.profile_store import load_portfolio, load_profile, save_portfolio, save_profile
@@ -26,6 +27,25 @@ load_dotenv(WEB_BACKEND_DIR / ".env")
 from web_service.backend.rebalance_agent.agent import run_agent
 from web_service.backend.rebalance_agent.logger import TRACE_DIR
 from web_service.backend.rebalance_agent.schema import AgentInput
+
+
+class ChatRequest(BaseModel):
+    question: str = Field(..., min_length=1)
+    top_k: int = Field(default=3, ge=1, le=5)
+    use_vision: bool = False
+    max_images: int = Field(default=2, ge=1, le=5)
+    answer_style: str = "해석/코칭 모드"
+    pdf_only: bool = False
+    include_portfolio: bool = True
+    conservative_view: bool = False
+    conversation_history: list[dict[str, str]] = Field(default_factory=list)
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    chunks: list[dict[str, Any]]
+    image_review: str = ""
+    memory: dict[str, Any] | None = None
 
 
 class SaveProfileRequest(BaseModel):
@@ -176,6 +196,31 @@ def get_agent_run(trace_id: str) -> dict[str, Any]:
     if not path.exists():
         raise HTTPException(status_code=404, detail="Trace not found")
     return _read_trace(path)
+
+
+@app.post("/api/pdf-chat", response_model=ChatResponse)
+def pdf_chat(payload: ChatRequest) -> ChatResponse:
+    try:
+        result = answer_question(
+            payload.question,
+            top_k=payload.top_k,
+            use_vision=payload.use_vision,
+            max_images=payload.max_images,
+            conversation_history=payload.conversation_history,
+            answer_style=payload.answer_style,
+            pdf_only=payload.pdf_only,
+            include_portfolio=payload.include_portfolio,
+            conservative_view=payload.conservative_view,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return ChatResponse(
+        answer=result.get("answer", ""),
+        chunks=result.get("chunks", []),
+        image_review=result.get("image_review", ""),
+        memory=result.get("memory"),
+    )
 
 
 @app.get("/api/profile")

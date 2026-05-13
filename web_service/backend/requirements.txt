@@ -4,6 +4,7 @@ pydantic
 python-dotenv
 openai
 pillow
+chromadb
 python-multipart
 openai-agents==0.16.1
 yfinance>=0.2.40
