@@ -24,6 +24,8 @@ class ToolResult(BaseModel):
 class AgentInput(BaseModel):
     user_query: str
     image_url: str | None = None
+    profile_context: dict[str, Any] | None = None
+    portfolio_context: dict[str, Any] | None = None
 
 
 class AgentOutput(BaseModel):

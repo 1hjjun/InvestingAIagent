@@ -111,6 +111,13 @@ def _compose_query(payload: RunRequest) -> str:
     return _compose_query_text(payload.user_query, payload.youtube_url)
 
 
+def _agent_context() -> tuple[dict[str, Any], dict[str, Any]]:
+    profile = load_profile()
+    portfolio = dict(load_portfolio())
+    portfolio["analytics"] = calculate_portfolio_analytics(portfolio)
+    return profile, portfolio
+
+
 def _run_response(result: Any) -> RunResponse:
     return RunResponse(
         trace_id=result.trace_id or "",
@@ -144,10 +151,13 @@ async def _save_upload(image: UploadFile | None) -> str | None:
 
 @app.post("/api/runs", response_model=RunResponse)
 async def create_agent_run(payload: RunRequest) -> RunResponse:
+    profile_context, portfolio_context = _agent_context()
     result = await run_agent(
         AgentInput(
             user_query=_compose_query(payload),
             image_url=payload.image_url,
+            profile_context=profile_context,
+            portfolio_context=portfolio_context,
         )
     )
     return _run_response(result)
@@ -160,10 +170,13 @@ async def create_agent_run_upload(
     image: UploadFile | None = File(default=None),
 ) -> RunResponse:
     image_path = await _save_upload(image)
+    profile_context, portfolio_context = _agent_context()
     result = await run_agent(
         AgentInput(
             user_query=_compose_query_text(user_query, youtube_url),
             image_url=image_path,
+            profile_context=profile_context,
+            portfolio_context=portfolio_context,
         )
     )
     return _run_response(result)
@@ -244,8 +257,9 @@ def get_portfolio() -> dict[str, Any]:
 @app.put("/api/portfolio")
 def put_portfolio(payload: SavePortfolioRequest) -> dict[str, Any]:
     portfolio = dict(payload.portfolio)
-    portfolio["analytics"] = calculate_portfolio_analytics(portfolio)
+    portfolio.pop("analytics", None)
     save_portfolio(portfolio)
+    portfolio["analytics"] = calculate_portfolio_analytics(portfolio)
     return portfolio
 
 

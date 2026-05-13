@@ -140,10 +140,25 @@ async def run_agent(agent_input: AgentInput, run_id: str | None = None) -> Agent
 def _build_prompt(agent_input: AgentInput) -> str:
     today = datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat()
     parts: list[str] = [f"[오늘 날짜: {today}]"]
+    if agent_input.profile_context:
+        parts.append("[사용자 투자 프로필]\n" + _json_block(agent_input.profile_context))
+    if agent_input.portfolio_context:
+        parts.append("[현재 저장된 포트폴리오]\n" + _json_block(agent_input.portfolio_context))
+        parts.append(
+            "[포트폴리오 사용 규칙]\n"
+            "- 이미지가 없어도 위 저장된 포트폴리오를 현재 포트폴리오로 사용한다.\n"
+            "- analytics 값은 대시보드에 표시되는 현재 계산값이므로 총 시드, 10%, 현금비중, 테마비중 설명에 우선 사용한다.\n"
+            "- 추가 비중 계산이 필요하면 저장된 positions/crypto_holdings/cash_krw를 바탕으로 portfolio_allocation_calculator를 호출한다.\n"
+            "- 이미지가 함께 있으면 vision_extractor 결과와 저장 포트폴리오를 비교해서 더 최신 정보인지 확인한다."
+        )
     if agent_input.image_url:
         parts.append(f"[이미지 경로: {agent_input.image_url}]")
     parts.append(agent_input.user_query)
     return "\n".join(parts)
+
+
+def _json_block(value: dict[str, Any]) -> str:
+    return json.dumps(value, ensure_ascii=False, indent=2, default=str)
 
 
 def _extract_chart_data(text: str) -> dict[str, Any] | None:

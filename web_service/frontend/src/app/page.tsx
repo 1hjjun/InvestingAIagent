@@ -67,6 +67,14 @@ function formatBytes(value: number) {
 
 function buildToolPlan(hasImage: boolean, hasYoutube: boolean, question: string): ToolStep[] {
   const steps: ToolStep[] = [];
+  const portfolioRelated = /포트폴리오|리밸런싱|비중|자산|종목|테마|현금|시드|투자/i.test(question);
+
+  if (!hasImage && portfolioRelated) {
+    steps.push({
+      tool: "portfolio_context",
+      detail: "저장된 현재 포트폴리오와 대시보드 계산값을 불러와 기준 자산으로 삼는 중입니다.",
+    });
+  }
 
   if (hasImage) {
     steps.push({
