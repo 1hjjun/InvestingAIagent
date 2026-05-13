@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
@@ -154,7 +154,7 @@ export default function RebalanceAgentPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [query, setQuery] = useState(sampleQuestion);
+  const [query, setQuery] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -283,6 +283,14 @@ export default function RebalanceAgentPage() {
     }
   }
 
+  function onQueryKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
+      return;
+    }
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return (
     <main className="mx-auto flex min-h-[calc(100vh-73px)] max-w-5xl flex-col px-5 py-6">
       <section className="mb-5 rounded-lg border border-line bg-white/92 p-5 shadow-soft">
@@ -404,8 +412,9 @@ export default function RebalanceAgentPage() {
             <textarea
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={onQueryKeyDown}
               className="max-h-44 min-h-12 flex-1 resize-none border-0 bg-transparent px-2 py-2 leading-6 outline-none"
-              placeholder="리밸런싱 Agent에게 요청하기"
+              placeholder={sampleQuestion}
             />
             <button
               type="submit"
