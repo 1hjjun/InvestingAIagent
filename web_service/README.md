@@ -16,8 +16,9 @@ web_service/
     src/app/portfolio/page.tsx  # 포트폴리오 이미지 분석 작업대
     src/app/macro/page.tsx      # YouTube 기반 매크로 분석 작업대
     src/app/dev/page.tsx        # 기존 trace/dev 화면
+    src/app/RAG/page.tsx        # 투자 RAG
     src/app/journal/page.tsx    # 날짜별 대화 노트
-    src/app/chat/page.tsx       # 자료 기반 리서치 채팅
+    src/app/chat/page.tsx       # /RAG redirect
 ```
 
 ## 실행 방법
@@ -61,9 +62,10 @@ http://127.0.0.1:3000
 /           기존 ETF 리밸런싱 실행 화면
 /portfolio  포트폴리오 이미지 분석 화면
 /macro      YouTube 최대 3개 기반 매크로 분석 화면
+/RAG        투자 RAG
 /dev        기존 trace 확인 화면
 /journal    날짜별 대화 노트
-/chat       자료 기반 투자 리서치 채팅
+/chat       /RAG로 이동
 ```
 
 배포용 빌드 확인은 아래 명령으로 합니다.
